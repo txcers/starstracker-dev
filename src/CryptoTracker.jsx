@@ -108,14 +108,12 @@ const CryptoPriceTracker = () => {
     }));
   };
 
-  // Эффекты
   useEffect(() => {
     fetchPrice();
     const interval = setInterval(fetchPrice, CONFIG.refreshInterval);
     return () => clearInterval(interval);
   }, []);
 
-  // Рендер
   if (priceData.loading) return (
     <div className="loader-container">
       <div className="loader"></div>
