@@ -24,7 +24,7 @@ const CryptoPriceTracker = () => {
   const CONFIG = {
     starPriceUsdt: 0.015,
     fixedStarPrice: 1.6,
-    commission: 0.3,
+    commission: 0.3, // комиссия в USDT
     refreshInterval: 30000
   };
 
@@ -78,8 +78,8 @@ const CryptoPriceTracker = () => {
       ).toFixed(2),
       
       withCommission: mode === 'rub'
-        ? ((numericValue - (CONFIG.commission * usdtRub)) / starRub).toFixed(2)
-        : null
+        ? ((numericValue - (CONFIG.commission * usdtRub)) / starRub).toFixed(2) // Для RUB → Stars вычитаем комиссию
+        : ((numericValue * starRub) + (CONFIG.commission * usdtRub)).toFixed(2) // Для Stars → RUB прибавляем комиссию
     };
 
     setConversionData(prev => ({ ...prev, ...newData }));
@@ -94,6 +94,18 @@ const CryptoPriceTracker = () => {
       fixed: null,
       withCommission: null
     });
+  };
+
+  // Обработчик изменения инпута
+  const handleInputChange = (e) => {
+    setConversionData(prev => ({
+      ...prev,
+      inputValue: e.target.value,
+      // Сбрасываем результаты при изменении ввода
+      converted: null,
+      fixed: null,
+      withCommission: null
+    }));
   };
 
   // Эффекты
@@ -149,10 +161,7 @@ const CryptoPriceTracker = () => {
           <input
             placeholder={mode === 'rub' ? 'Amount in RUB...' : 'Amount in Stars...'}
             value={inputValue}
-            onChange={(e) => setConversionData(prev => ({
-              ...prev,
-              inputValue: e.target.value
-            }))}
+            onChange={handleInputChange}
             type="number"
             className="amount-input"
           />
@@ -196,6 +205,13 @@ const CryptoPriceTracker = () => {
                   <h3>Market Rate</h3>
                   <p className="result-value">
                     {inputValue} stars = <strong>{converted}</strong> ₽
+                  </p>
+                </div>
+                
+                <div className="result-card commission">
+                  <h3>With Commission (0.3 USDT ≈ {commissionInRub}₽)</h3>
+                  <p className="result-value">
+                    {inputValue} stars = <strong>{withCommission}</strong> ₽
                   </p>
                 </div>
                 
