@@ -17,7 +17,8 @@ const CryptoPriceTracker = () => {
     mode: 'rub',
     converted: null,
     fixed: null,
-    withCommission: null
+    withCommission: null,
+    difference: null // Добавлено поле для хранения разницы
   });
 
   // Константы
@@ -66,23 +67,30 @@ const CryptoPriceTracker = () => {
     const numericValue = Number(inputValue);
     if (isNaN(numericValue)) return;
 
-    const newData = { 
-      converted: (mode === 'rub' 
-        ? numericValue / starRub 
-        : numericValue * starRub
-      ).toFixed(2),
-      
-      fixed: (mode === 'rub' 
-        ? numericValue / CONFIG.fixedStarPrice 
-        : numericValue * CONFIG.fixedStarPrice
-      ).toFixed(2),
-      
-      withCommission: mode === 'rub'
-        ? ((numericValue - (CONFIG.commission * usdtRub)) / starRub).toFixed(2) // Для RUB → Stars вычитаем комиссию
-        : ((numericValue * starRub) + (CONFIG.commission * usdtRub)).toFixed(2) // Для Stars → RUB прибавляем комиссию
-    };
+    const convertedValue = mode === 'rub' 
+      ? numericValue / starRub 
+      : numericValue * starRub;
+    
+    const fixedValue = mode === 'rub' 
+      ? numericValue / CONFIG.fixedStarPrice 
+      : numericValue * CONFIG.fixedStarPrice;
+    
+    const withCommissionValue = mode === 'rub'
+      ? ((numericValue - (CONFIG.commission * usdtRub)) / starRub)
+      : ((numericValue * starRub) + (CONFIG.commission * usdtRub));
 
-    setConversionData(prev => ({ ...prev, ...newData }));
+    // Расчет разницы
+    const difference = mode === 'rub'
+      ? (-(fixedValue - withCommissionValue)).toFixed(2)
+      : (-(withCommissionValue - fixedValue)).toFixed(2);
+
+    setConversionData(prev => ({ 
+      ...prev, 
+      converted: convertedValue.toFixed(2),
+      fixed: fixedValue.toFixed(2),
+      withCommission: withCommissionValue.toFixed(2),
+      difference
+    }));
   };
 
   // Смена режима
@@ -92,7 +100,8 @@ const CryptoPriceTracker = () => {
       mode,
       converted: null,
       fixed: null,
-      withCommission: null
+      withCommission: null,
+      difference: null
     });
   };
 
@@ -104,7 +113,8 @@ const CryptoPriceTracker = () => {
       // Сбрасываем результаты при изменении ввода
       converted: null,
       fixed: null,
-      withCommission: null
+      withCommission: null,
+      difference: null
     }));
   };
 
@@ -128,7 +138,7 @@ const CryptoPriceTracker = () => {
     </div>
   );
 
-  const { mode, inputValue, converted, fixed, withCommission } = conversionData;
+  const { mode, inputValue, converted, fixed, withCommission, difference } = conversionData;
   const { usdtRub, starRub, lastUpdated } = priceData;
   const commissionInRub = (CONFIG.commission * usdtRub).toFixed(2);
 
@@ -196,6 +206,13 @@ const CryptoPriceTracker = () => {
                     {inputValue} ₽ = <strong>{fixed}</strong> stars (1.6₽ each)
                   </p>
                 </div>
+
+                <div className="result-card difference">
+                  <h3>Difference (Fixed - Commission)</h3>
+                  <p className="result-value">
+                    You get <strong>{difference}</strong> 
+                  </p>
+                </div>
               </>
             ) : (
               <>
@@ -217,6 +234,13 @@ const CryptoPriceTracker = () => {
                   <h3>Fixed Rate</h3>
                   <p className="result-value">
                     {inputValue} stars = <strong>{fixed}</strong> ₽ (1.6₽ each)
+                  </p>
+                </div>
+
+                <div className="result-card difference">
+                  <h3>Difference (Commission - Fixed)</h3>
+                  <p className="result-value">
+                    You get <strong>{difference}</strong> ₽ 
                   </p>
                 </div>
               </>

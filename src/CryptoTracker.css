@@ -212,3 +212,17 @@
     color: var(--warning);
     margin-bottom: 1rem;
   }
+  .result-card.difference {
+    background-color: #f8f9fa;
+    border-left: 4px solid #17a2b8;
+    margin-top: 15px;
+  }
+  
+  .result-card.difference h3 {
+    color: #17a2b8;
+  }
+  
+  .result-card.difference .result-value {
+    font-weight: bold;
+    color: #28a745;
+  }
